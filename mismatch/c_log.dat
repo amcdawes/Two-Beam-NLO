@@ -1,0 +1,1 @@
+sigma: 35 transits: 350 IL: 0.565 NZ: 20 kin: 15.49 bkinx: 15.49 bkiny: 0 noiseamp: 1e-05 seed: 12345678 probeamp: 0.002 probewidth: 1 switch-on at: 75
