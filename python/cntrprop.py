@@ -31,16 +31,16 @@ lbynzeta = L / NZ * eta
 stpp = 1j*lbynzeta
 ramp = 1.0
 
-f = zeros((N,N,NZ)).astype(complex)
-b = zeros((N,N,NZ)).astype(complex)
-f_tmp = zeros((N,N,NZ)).astype(complex)
-b_tmp = zeros((N,N,NZ)).astype(complex)
-probe = zeros((N,N)).astype(complex)
-ff = zeros((N,N)).astype(complex)
-bb = zeros((N,N)).astype(complex)
-expDz = zeros((N,N)).astype(complex)
-expDzByTwo = zeros((N,N)).astype(complex)
-noise = zeros((N,N))
+f = zeros((N,N,NZ)).astype(complex) # the fwd field at all points
+b = zeros((N,N,NZ)).astype(complex) # bwd field at all points
+f_tmp = zeros((N,N,NZ)).astype(complex) # tmp version of fwd
+b_tmp = zeros((N,N,NZ)).astype(complex) # tmp version of bwd
+probe = zeros((N,N)).astype(complex) # probe field
+ff = zeros((N,N)).astype(complex) # use to calculate new slice of f
+bb = zeros((N,N)).astype(complex) # use to calculate new slice of b
+expDz = zeros((N,N)).astype(complex) # full-step free-space propagator
+expDzByTwo = zeros((N,N)).astype(complex) # half-step FS propagator
+noise = zeros((N,N)) # a noise term
 
 x = arange(-N/2, N/2, 1)
 y = arange(-N/2, N/2, 1)
@@ -89,20 +89,33 @@ for intstep in range(integrateSteps):
 	b[:,:,NZ-1] = sqrt(IL) * ramp * gaussian_beam(x+pumpoffset[0], y+pumpoffset[1], 0, L*sigma/2, w0, L*sigma/(w0*w0))
 
 	# step forward at the first point
+	# first find the intensities of each field:
 	fi = f[:,:,0]*conjugate(f[:,:,0])
 	bi = b[:,:,0]*conjugate(b[:,:,0])
+	# then apply the nonlinear operator to first slice:
 	ff = f[:,:,0] * exp(stpp*(fi+2.0*bi))
 
 	# step backward at the last points:
+	# intensities at the far end
 	fi = f[:,:,-1]*conjugate(f[:,:,-1])
 	bi = b[:,:,-1]*conjugate(b[:,:,-1])
+	# nonlinear operator on last slice:
 	bb = b[:,:,-1] * exp(stpp*(2.0*fi+bi))
 
-	# Fourier transform the fields
+	# Fourier transform the end slices
 
-	# Free-space propagate half-step
+	# Free-space propagate half-step for end slices
 
-	# inverse Fourier
+	# inverse Fourier transform end slices
 
+	# set field values one step in from each end (use tmp array)
 
+	# LOOP: for all slices
+		# nonlinear step for each slice
+		# Forward FFT
+		# Free-space propagate a full step
+		# Backward FFT
+		# set field values in next (and prev) slice for fwd (bwd) fields
+		
+	# shift back from working version.
 
