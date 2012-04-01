@@ -120,17 +120,17 @@ for intstep in range(integrateSteps):
     # Fourier transform the end slices
     fft_ff.execute()
     fft_bb.execute()
-    print "f"
+    #print "f"
 
     # Free-space propagate half-step for end slices
     ff_tmp *= expDzByTwo
     bb_tmp *= expDzByTwo
-    print "."
+    #print "."
 
     # inverse Fourier transform end slices
     ifft_ff.execute()
     ifft_bb.execute()
-    print "b"
+    #print "b"
 
     # set field values one step in from each end (use tmp array)
     f_tmp[:,:,1] = ff
@@ -138,7 +138,7 @@ for intstep in range(integrateSteps):
 
     # LOOP: for all slices
     for zindex in range(1,NZ-1):
-        print "."
+        #print "."
         
         # nonlinear step for each slice
         fi = f[:,:,zindex]*conjugate(f[:,:,zindex]) 
