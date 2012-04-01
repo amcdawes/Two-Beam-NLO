@@ -36,10 +36,10 @@ stpp = 1j*lbynzeta
 ramp = 1.0
 
 #f = zeros((N,N,NZ)).astype(complex) # the fwd field at all points
-f = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
-b = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
-f_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
-b_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+f = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
+b = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
+f_tmp = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
+b_tmp = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
 probe = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 ff = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 bb = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
@@ -47,10 +47,10 @@ expDz = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDzByTwo = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 noise  = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 
-fft_ff = pyfftw.FFTW(ff)
-fft_bb = pyfftw.FFTW(bb)
-ifft_ff = pyfftw.FFTW(ff,direction='FFTW_BACKWARD')
-ifft_bb = pyfftw.FFTW(bb,direction='FFTW_BACKWARD')
+fft_ff = pyfftw.FFTW(ff,ff)
+fft_bb = pyfftw.FFTW(bb,bb)
+ifft_ff = pyfftw.FFTW(ff,ff,direction='FFTW_BACKWARD')
+ifft_bb = pyfftw.FFTW(bb,bb,direction='FFTW_BACKWARD')
 
 print "created FFTW plans"
 
