@@ -47,10 +47,10 @@ expDz = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDzByTwo = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 noise  = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 
-fft_ff = pyfftw.FFTW(ff,ff)
-fft_bb = pyfftw.FFTW(bb,bb)
-ifft_ff = pyfftw.FFTW(ff,ff,direction='FFTW_BACKWARD')
-ifft_bb = pyfftw.FFTW(bb,bb,direction='FFTW_BACKWARD')
+fft_ff = pyfftw.FFTW(ff,ff,flags=('FFTW_PATIENT',))
+fft_bb = pyfftw.FFTW(bb,bb,flags=('FFTW_PATIENT',))
+ifft_ff = pyfftw.FFTW(ff,ff,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
+ifft_bb = pyfftw.FFTW(bb,bb,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
 
 print "created FFTW plans"
 
