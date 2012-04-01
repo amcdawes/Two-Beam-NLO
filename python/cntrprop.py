@@ -42,15 +42,17 @@ f_tmp = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
 b_tmp = pyfftw.n_byte_align_empty((N,N,NZ),16,dtype=complex128)
 probe = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 ff = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+ff_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 bb = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+bb_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDz = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDzByTwo = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 noise  = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 
-fft_ff = pyfftw.FFTW(ff,ff,flags=('FFTW_PATIENT',))
-fft_bb = pyfftw.FFTW(bb,bb,flags=('FFTW_PATIENT',))
-ifft_ff = pyfftw.FFTW(ff,ff,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
-ifft_bb = pyfftw.FFTW(bb,bb,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
+fft_ff = pyfftw.FFTW(ff,ff_tmp,flags=('FFTW_PATIENT',))
+fft_bb = pyfftw.FFTW(bb,bb_tmp,flags=('FFTW_PATIENT',))
+ifft_ff = pyfftw.FFTW(ff_tmp,ff,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
+ifft_bb = pyfftw.FFTW(bb_tmp,bb,direction='FFTW_BACKWARD',flags=('FFTW_PATIENT',))
 
 print "created FFTW plans"
 
@@ -121,8 +123,8 @@ for intstep in range(integrateSteps):
     print "f"
 
     # Free-space propagate half-step for end slices
-    ff = ff*expDzByTwo
-    bb = bb*expDzByTwo
+    ff_tmp *= expDzByTwo
+    bb_tmp *= expDzByTwo
     print "."
 
     # inverse Fourier transform end slices
@@ -151,8 +153,8 @@ for intstep in range(integrateSteps):
         # TODO: save if it is the last slice
 
         # Free-space propagate a full step
-        ff *= expDz
-        bb *= expDz
+        ff_tmp *= expDz
+        bb_tmp *= expDz
 
         # Backward FFT
         ifft_ff.execute()
