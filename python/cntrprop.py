@@ -1,7 +1,9 @@
-from numpy import pi, zeros, arange, meshgrid, exp, sqrt, conjugate 
+from numpy import pi, zeros, arange, meshgrid, exp, sqrt, conjugate, complex128 
 from numpy.fft import fftshift, fft2, ifft2
+import pyfftw
 from numpy import arctan as atan
 from sys import stdout
+
 L = 1.0
 w0 = 1.0
 sigma = 400
@@ -33,16 +35,24 @@ lbynzeta = L / NZ * eta
 stpp = 1j*lbynzeta
 ramp = 1.0
 
-f = zeros((N,N,NZ)).astype(complex) # the fwd field at all points
-b = zeros((N,N,NZ)).astype(complex) # bwd field at all points
-f_tmp = zeros((N,N,NZ)).astype(complex) # tmp version of fwd
-b_tmp = zeros((N,N,NZ)).astype(complex) # tmp version of bwd
-probe = zeros((N,N)).astype(complex) # probe field
-ff = zeros((N,N)).astype(complex) # use to calculate new slice of f
-bb = zeros((N,N)).astype(complex) # use to calculate new slice of b
-expDz = zeros((N,N)).astype(complex) # full-step free-space propagator
-expDzByTwo = zeros((N,N)).astype(complex) # half-step FS propagator
-noise = zeros((N,N)) # a noise term
+#f = zeros((N,N,NZ)).astype(complex) # the fwd field at all points
+f = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+b = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+f_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+b_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+probe = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+ff = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+bb = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+expDz = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+expDzByTwo = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+noise  = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+
+fft_ff = pyfftw.FFTW(ff)
+fft_bb = pyfftw.FFTW(bb)
+ifft_ff = pyfftw.FFTW(ff,direction='FFTW_BACKWARD')
+ifft_bb = pyfftw.FFTW(bb,direction='FFTW_BACKWARD')
+
+print "created FFTW plans"
 
 x = arange(-N/2, N/2, 1)
 y = arange(-N/2, N/2, 1)
@@ -106,8 +116,8 @@ for intstep in range(integrateSteps):
     bb = b[:,:,-1] * exp(stpp*(2.0*fi+bi))
 
     # Fourier transform the end slices
-    ff = fft2(ff)
-    bb = fft2(bb)
+    fft_ff.execute()
+    fft_bb.execute()
     print "f"
 
     # Free-space propagate half-step for end slices
@@ -116,8 +126,8 @@ for intstep in range(integrateSteps):
     print "."
 
     # inverse Fourier transform end slices
-    ff = ifft2(ff)
-    bb = ifft2(bb)
+    ifft_ff.execute()
+    ifft_bb.execute()
     print "b"
 
     # set field values one step in from each end (use tmp array)
@@ -135,8 +145,8 @@ for intstep in range(integrateSteps):
         bb = b[:,:,zindex] * exp(stpp*(2.0*fi + bi))
         
         # Forward FFT
-        ff = fft2(ff)
-        bb = fft2(bb)
+        fft_ff.execute()
+        fft_bb.execute()
 
         # TODO: save if it is the last slice
 
@@ -145,8 +155,8 @@ for intstep in range(integrateSteps):
         bb *= expDz
 
         # Backward FFT
-        ff = ifft2(ff)
-        bb = ifft2(bb)
+        ifft_ff.execute()
+        ifft_bb.execute()
         
         # set field values in next (and prev) slice for fwd (bwd) fields
         f_tmp[:,:,zindex+1] = ff
