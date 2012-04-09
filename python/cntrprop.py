@@ -1,5 +1,6 @@
 from numpy import pi, zeros, arange, meshgrid, exp, sqrt, conjugate, complex128 
 from numpy.fft import fftshift, fft2, ifft2
+from numpy.random import rand
 import pyfftw
 from numpy import arctan as atan
 from sys import stdout
@@ -9,7 +10,7 @@ w0 = 1.0
 sigma = 400
 IL = 0.565
 eta = 1.0
-transits = 1
+transits = 350
 
 N = 256 # transverse grid slices
 NZ = 20 # longitudinal grid slices
@@ -48,6 +49,8 @@ bb_tmp = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDz = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 expDzByTwo = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
 noise  = pyfftw.n_byte_align_empty((N,N),16,dtype=complex128)
+
+noise = rand(N,N)
 
 fft_ff = pyfftw.FFTW(ff,ff_tmp,flags=('FFTW_PATIENT',))
 fft_bb = pyfftw.FFTW(bb,bb_tmp,flags=('FFTW_PATIENT',))
@@ -98,7 +101,7 @@ probe = sqrt(IL)*ramp*probeamp*exp(- (x*x + y*y) / ((w0*probewidth)*(w0*probewid
 
 for intstep in range(integrateSteps):
     print "integration step %d of %d" % (intstep, integrateSteps)
-    f[:,:,0] = sqrt(IL) * ramp * gaussian_beam(x - pumpoffset[0], y - pumpoffset[1], 0, L*sigma/2, w0, L*sigma/(w0*w0)) * exp(1j*(bkin[0]*x + bkin[1]*y))# + ramp*noiseamp*noise(i,j) #TODO restore noise term
+    f[:,:,0] = sqrt(IL) * ramp * gaussian_beam(x - pumpoffset[0], y - pumpoffset[1], 0, L*sigma/2, w0, L*sigma/(w0*w0)) * exp(1j*(bkin[0]*x + bkin[1]*y)) + ramp*noiseamp*noise #TODO restore noise term
     if intstep > switchon: 
         f[:,:,0] += probe
     b[:,:,NZ-1] = sqrt(IL) * ramp * gaussian_beam(x+pumpoffset[0], y+pumpoffset[1], 0, L*sigma/2, w0, L*sigma/(w0*w0))
